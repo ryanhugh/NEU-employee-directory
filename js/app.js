@@ -126,7 +126,9 @@ function onSeach() {
 		if (!person.element) {
 			person.element = rowTemplate.cloneNode(true);
 			person.element.querySelector('.name').innerText = person.name;
-			person.element.querySelector('.phone').innerText = person.phone;
+			if (person.phone) {
+				person.element.querySelector('.phone').innerText = person.phone;
+			}
 			person.element.querySelector('.email').innerText = person.email;
 			person.element.querySelector('.primaryappointment').innerText = he.decode(person.primaryappointment);
 			person.element.querySelector('.primarydepartment').innerText = he.decode(person.primarydepartment);
