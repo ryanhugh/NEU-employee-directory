@@ -48,7 +48,7 @@ var rowTemplate;
 
 async.parallel([
 	function (callback) {
-		fireRequest('/map.json', function (err, map) {
+		fireRequest('map.json', function (err, map) {
 			if (err) {
 				alert(err)
 				return callback(err);
@@ -58,7 +58,7 @@ async.parallel([
 		}.bind(this))
 	}.bind(this),
 	function (callback) {
-		fireRequest('/searchIndex.json', function (err, index) {
+		fireRequest('searchIndex.json', function (err, index) {
 			if (err) {
 				alert(err)
 				return callback(err);
