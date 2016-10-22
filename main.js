@@ -86,7 +86,7 @@ function parseTable(table) {
 };
 
 var people = []
-
+var peopleMap = {}
 
 var index = elasticlunr();
 index.saveDocument(false)
@@ -166,6 +166,7 @@ function get(lastNameStart) {
 						person.primarydepartment = parsedTable.primarydepartment[i];
 						people.push(person)
 						index.addDoc(person)
+						peopleMap[person.id] = person
 					}
 
 					fs.writeFile("data.json", JSON.stringify(people), function (err) {
@@ -183,6 +184,15 @@ function get(lastNameStart) {
 						}
 
 						console.log("The search index was saved!");
+					});
+
+
+					fs.writeFile("map.json", JSON.stringify(peopleMap), function (err) {
+						if (err) {
+							return console.log(err);
+						}
+
+						console.log("The people map was saved!");
 					});
 
 					return;
