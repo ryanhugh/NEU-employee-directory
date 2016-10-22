@@ -202,19 +202,9 @@ function get(lastNameStart) {
 			console.log('YOOOOO it didnt find the table')
 			console.log(body)
 
-
 		}.bind(this))
-
-
-
-		// console.log(body);
 	}.bind(this))
 }
 
 
 get('ra')
-	// 
-	// 
-
-// console.log(domutils)
-//

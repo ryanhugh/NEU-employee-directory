@@ -1,8 +1,6 @@
 'use strict';
 
-
-
-Request.prototype.fireRequest = function (config, callback) {
+function fireRequest(url, callback) {
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function () {
 		if (xmlhttp.readyState != XMLHttpRequest.DONE) {
@@ -20,9 +18,9 @@ Request.prototype.fireRequest = function (config, callback) {
 				err = 'unknown ajax error' + String(xmlhttp.status)
 			}
 
-			err += 'config = ' + JSON.stringify(config)
+			err += 'url = ' + JSON.stringify(url)
 
-			console.log('error, bad code recievied', xmlhttp.status, err, config)
+			console.log('error, bad code recievied', xmlhttp.status, err, url)
 
 			return callback(err);
 		}
@@ -30,25 +28,110 @@ Request.prototype.fireRequest = function (config, callback) {
 		var response = JSON.parse(xmlhttp.response)
 
 		if (response.error) {
-			console.log("ERROR networking error bad reqeust?", config);
+			console.log("ERROR networking error bad reqeust?", url);
 		}
 
 		callback(null, response)
 	}.bind(this);
 
-	xmlhttp.open(config.method, config.url, true);
+	xmlhttp.open('GET', url, true);
 	xmlhttp.send();
 }
 
+var searchElement;
+var searchConfig;
+var peopleMap;
+var searchIndex;
+
+async.parallel([
+	function (callback) {
+		fireRequest('/map.json', function (err, map) {
+			if (err) {
+				alert(err)
+				return callback(err);
+			}
+			peopleMap = map;
+			callback(null, map)
+		}.bind(this))
+	}.bind(this),
+	function (callback) {
+		fireRequest('/searchIndex.json', function (err, index) {
+			if (err) {
+				alert(err)
+				return callback(err);
+			}
 
 
-fireRequest('/data.json', function (err, data) {
-	$(document).ready(function () {
-		
+
+			searchIndex = elasticlunr.Index.load(index);
+
+			// Todo: optimize this and hopefully move it server side
+			searchConfig = {}
+			searchIndex.getFields().forEach(function (field) {
+				searchConfig[field] = {
+					boost: 1,
+					bool: "OR",
+					expand: false
+				};
+			});
+
+		}.bind(this))
+	}.bind(this),
+	function (callback) {
+		$(document).ready(function () {
+
+
+			searchElement = document.getElementById('seach_id');
+
+			searchElement.onkeydown = onSeach;
+
+
+			callback()
+		}.bind(this));
+	}.bind(this)
+], function (err) {
+	if (err) {
+		return;
+	}
 
 
 
+	alert('done')
 
 
-	}.bind(this));
+
 }.bind(this))
+
+
+
+
+
+
+
+function onSeach() {
+	if (searchElement.value.length === 0) {
+		return;
+	}
+
+
+
+	var results = searchIndex.search(searchElement.value, searchConfig)
+
+	results.forEach(function (personId) {
+		var person = peopleMap[personId]
+
+		if (!person.element) {
+
+			// Make an element for this person
+
+
+		}
+
+
+	}.bind(this))
+
+
+
+
+	console.log(searchElement.value)
+}
