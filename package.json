@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/ryanhugh/NEU-employee-directory#readme",
   "dependencies": {
+    "d3-queue": "^3.0.3",
     "elasticlunr": "^0.9.5",
+    "he": "^1.1.0",
     "lodash": "^4.16.4"
   }
 }

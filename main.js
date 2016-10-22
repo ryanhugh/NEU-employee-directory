@@ -4,7 +4,7 @@ var domutils = require('domutils');
 var _ = require('lodash')
 var elasticlunr = require('elasticlunr')
 var fs = require('fs');
-
+var queue = require('d3-queue').queue
 
 var alphabet = 'qwertyuiopasdfghjklzxcvbnm';
 
@@ -23,7 +23,7 @@ function handleRequestResponce(body, callback) {
 //regardless if its part of the header or the first row of the body
 function parseTable(table) {
 	if (table.name != 'table') {
-		elog('parse table was not given a table..')
+		console.warn('parse table was not given a table..')
 		return;
 	};
 
@@ -31,7 +31,7 @@ function parseTable(table) {
 	var rows = domutils.getElementsByTagName('tr', table);
 
 	if (rows.length === 0) {
-		elog('zero rows???')
+		console.warn('zero rows???')
 		return;
 	};
 
@@ -89,7 +89,7 @@ var people = []
 var peopleMap = {}
 
 var index = elasticlunr();
-index.saveDocument(false)
+// index.saveDocument(false)
 
 index.setRef('id');
 index.addField('name');
@@ -99,7 +99,7 @@ index.addField('primarydepartment');
 index.addField('primarydepartment');
 
 
-function get(lastNameStart) {
+function get(lastNameStart, callback) {
 
 	var body = 'searchBy=Last+Name&queryType=begins+with&searchText=' + lastNameStart + '&deptText=&addrText=&numText=&divText=&facStaff=1'
 
@@ -109,12 +109,11 @@ function get(lastNameStart) {
 		headers: {
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143',
 			'Content-Type': 'application/x-www-form-urlencoded',
-			'Cookie': 'JSESSIONID=0000oVv3ga7inTqe4wMw_44D8Id:188q12kdr',
+			'Cookie': 'JSESSIONID=0000xnUBUr4Ppr_Trw1vxwnS2ak:188q12kdr',
 			'Referer': 'https://prod-web.neu.edu/wasapp/employeelookup/public/searchEmployees.action'
 		},
 		body: body
 	}, function (err, resp, body) {
-
 
 		handleRequestResponce(body, function (err, dom) {
 			var elements = domutils.getElementsByTagName('table', dom)
@@ -131,15 +130,14 @@ function get(lastNameStart) {
 					// Delete one of the elements that is before the header that would mess stuff up
 					domutils.removeElement(element.children[1].children[1])
 
-
-
 					var parsedTable = parseTable(element)
-					console.log(parsedTable);
-
+					if (!parsedTable) {
+						console.log('Warning Unable to parse table:', lastNameStart)
+						return callback()
+					}
+					console.log('Found', parsedTable._rowCount, ' people on page ', lastNameStart)
 
 					for (var i = 0; i < parsedTable._rowCount; i++) {
-						// var row = parsedTable[i];
-
 						var person = {};
 						person.name = parsedTable.name[i].split('\n\n')[0]
 
@@ -168,43 +166,71 @@ function get(lastNameStart) {
 						index.addDoc(person)
 						peopleMap[person.id] = person
 					}
-
-					fs.writeFile("data.json", JSON.stringify(people), function (err) {
-						if (err) {
-							return console.log(err);
-						}
-
-						console.log("The file was saved!");
-					});
-
-
-					fs.writeFile("searchIndex.json", JSON.stringify(index.toJSON()), function (err) {
-						if (err) {
-							return console.log(err);
-						}
-
-						console.log("The search index was saved!");
-					});
-
-
-					fs.writeFile("map.json", JSON.stringify(peopleMap), function (err) {
-						if (err) {
-							return console.log(err);
-						}
-
-						console.log("The people map was saved!");
-					});
-
-					return;
+					return callback();
 				}
 			}
 
 			console.log('YOOOOO it didnt find the table')
 			console.log(body)
 
+			return callback('nope');
+
 		}.bind(this))
 	}.bind(this))
 }
 
+var q = queue(5)
 
-get('ra')
+
+alphabet.split('').forEach(function (firstLetter) {
+	alphabet.split('').forEach(function (secondLetter) {
+
+		q.defer(function (callback) {
+
+			get(firstLetter + secondLetter, function (err) {
+				callback()
+			}.bind(this))
+		}.bind(this))
+
+	}.bind(this))
+}.bind(this))
+
+
+q.awaitAll(function (err) {
+	if (err) {
+		console.log(err);
+		return;
+	}
+
+	fs.writeFile("data.json", JSON.stringify(people), function (err) {
+		if (err) {
+			return console.log(err);
+		}
+
+		console.log("The file was saved!");
+	});
+
+
+	fs.writeFile("searchIndex.json", JSON.stringify(index.toJSON()), function (err) {
+		if (err) {
+			return console.log(err);
+		}
+
+		console.log("The search index was saved!");
+	});
+
+
+	fs.writeFile("map.json", JSON.stringify(peopleMap), function (err) {
+		if (err) {
+			return console.log(err);
+		}
+
+		console.log("The people map was saved!");
+	});
+
+
+
+}.bind(this))
+
+
+// get('ra')

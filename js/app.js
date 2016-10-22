@@ -38,10 +38,13 @@ function fireRequest(url, callback) {
 	xmlhttp.send();
 }
 
+var resultsContainer;
 var searchElement;
+
 var searchConfig;
 var peopleMap;
 var searchIndex;
+var rowTemplate;
 
 async.parallel([
 	function (callback) {
@@ -61,19 +64,20 @@ async.parallel([
 				return callback(err);
 			}
 
-
-
 			searchIndex = elasticlunr.Index.load(index);
 
-			// Todo: optimize this and hopefully move it server side
-			searchConfig = {}
+			searchConfig = {
+				expand: true
+			}
 			searchIndex.getFields().forEach(function (field) {
 				searchConfig[field] = {
 					boost: 1,
 					bool: "OR",
-					expand: false
+					expand: true
 				};
 			});
+
+			callback()
 
 		}.bind(this))
 	}.bind(this),
@@ -81,10 +85,10 @@ async.parallel([
 		$(document).ready(function () {
 
 
+			rowTemplate = document.getElementsByClassName('template_class_name')[0];
+			resultsContainer = rowTemplate.parentElement;
 			searchElement = document.getElementById('seach_id');
-
-			searchElement.onkeydown = onSeach;
-
+			searchElement.onkeyup = onSeach;
 
 			callback()
 		}.bind(this));
@@ -94,9 +98,6 @@ async.parallel([
 		return;
 	}
 
-
-
-	alert('done')
 
 
 
@@ -113,25 +114,28 @@ function onSeach() {
 		return;
 	}
 
+	while (resultsContainer.lastChild) {
+		resultsContainer.removeChild(resultsContainer.lastChild)
+	}
 
-
-	var results = searchIndex.search(searchElement.value, searchConfig)
+	var results = searchIndex.search(searchElement.value, searchConfig).slice(0,100)
 
 	results.forEach(function (personId) {
-		var person = peopleMap[personId]
+		var person = peopleMap[personId.ref]
 
 		if (!person.element) {
-
-			// Make an element for this person
-
-
+			person.element = rowTemplate.cloneNode(true);
+			person.element.querySelector('.name').innerText = person.name;
+			person.element.querySelector('.phone').innerText = person.phone;
+			person.element.querySelector('.email').innerText = person.email;
+			person.element.querySelector('.primaryappointment').innerText = he.decode(person.primaryappointment);
+			person.element.querySelector('.primarydepartment').innerText = he.decode(person.primarydepartment);
+			person.element.style.display = ''
 		}
 
-
+		resultsContainer.appendChild(person.element);
 	}.bind(this))
 
 
-
-
-	console.log(searchElement.value)
+	// console.log(searchElement.value)
 }
