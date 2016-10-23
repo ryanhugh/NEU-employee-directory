@@ -88,6 +88,7 @@ async.parallel([
 
 			rowTemplate = document.getElementsByClassName('template_class_name')[0];
 			resultsContainer = rowTemplate.parentElement;
+			rowTemplate.remove();
 			searchElement = document.getElementById('seach_id');
 			tableElement = document.getElementById('main_results_table_id');
 
@@ -124,13 +125,12 @@ function onSeach() {
 		resultsContainer.removeChild(resultsContainer.lastChild)
 	}
 
-	var results = searchIndex.search(searchElement.value, searchConfig).slice(0,100)
+	var results = searchIndex.search(searchElement.value, searchConfig).slice(0, 100)
 
 	if (results.length === 0) {
 		tableElement.style.display = 'none';
 	}
-	else 
-	{
+	else {
 		tableElement.style.display = ''
 	}
 
@@ -151,7 +151,4 @@ function onSeach() {
 
 		resultsContainer.appendChild(person.element);
 	}.bind(this))
-
-
-	// console.log(searchElement.value)
 }
