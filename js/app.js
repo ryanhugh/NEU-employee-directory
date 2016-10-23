@@ -40,6 +40,7 @@ function fireRequest(url, callback) {
 
 var resultsContainer;
 var searchElement;
+var tableElement;
 
 var searchConfig;
 var peopleMap;
@@ -88,6 +89,10 @@ async.parallel([
 			rowTemplate = document.getElementsByClassName('template_class_name')[0];
 			resultsContainer = rowTemplate.parentElement;
 			searchElement = document.getElementById('seach_id');
+			tableElement = document.getElementById('main_results_table_id');
+
+			searchElement.focus();
+
 			searchElement.onkeyup = onSeach;
 
 			callback()
@@ -111,6 +116,7 @@ async.parallel([
 
 function onSeach() {
 	if (searchElement.value.length === 0) {
+		tableElement.style.display = 'none';
 		return;
 	}
 
@@ -119,6 +125,14 @@ function onSeach() {
 	}
 
 	var results = searchIndex.search(searchElement.value, searchConfig).slice(0,100)
+
+	if (results.length === 0) {
+		tableElement.style.display = 'none';
+	}
+	else 
+	{
+		tableElement.style.display = ''
+	}
 
 	results.forEach(function (personId) {
 		var person = peopleMap[personId.ref]
