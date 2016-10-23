@@ -18,8 +18,10 @@
   "homepage": "https://github.com/ryanhugh/NEU-employee-directory#readme",
   "dependencies": {
     "d3-queue": "^3.0.3",
+    "domutils": "^1.5.1",
     "elasticlunr": "^0.9.5",
     "he": "^1.1.0",
+    "htmlparser2": "^3.9.2",
     "lodash": "^4.16.4",
     "request": "^2.75.0"
   }
