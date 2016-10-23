@@ -95,7 +95,7 @@ index.setRef('id');
 index.addField('name');
 index.addField('phone');
 index.addField('email');
-index.addField('primarydepartment');
+index.addField('primaryappointment');
 index.addField('primarydepartment');
 
 
@@ -109,7 +109,7 @@ function get(lastNameStart, callback) {
 		headers: {
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143',
 			'Content-Type': 'application/x-www-form-urlencoded',
-			'Cookie': 'JSESSIONID=0000xnUBUr4Ppr_Trw1vxwnS2ak:188q12kdr',
+			'Cookie': 'JSESSIONID=0000drbA9fD-qgH4GW78LJZGYkj:188q12kdr',
 			'Referer': 'https://prod-web.neu.edu/wasapp/employeelookup/public/searchEmployees.action'
 		},
 		body: body
