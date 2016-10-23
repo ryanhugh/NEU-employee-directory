@@ -95,7 +95,7 @@ index.setRef('id');
 index.addField('name');
 index.addField('phone');
 index.addField('email');
-index.addField('primarydepartment');
+index.addField('primaryappointment');
 index.addField('primarydepartment');
 
 
