@@ -1,6 +1,23 @@
 'use strict';
 
-function fireRequest(url, callback) {
+function fireRequest(config, callback) {
+	if (!callback) {
+		callback = function () {}
+	}
+	if (typeof config == 'string') {
+		config = {
+			url: config,
+			method: 'GET'
+		}
+	}
+	if (!config.method) {
+		if (config.body) {
+			config.method = 'POST'
+		}
+		else {
+			config.method = 'GET'
+		}
+	}
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function () {
 		if (xmlhttp.readyState != XMLHttpRequest.DONE) {
@@ -18,25 +35,80 @@ function fireRequest(url, callback) {
 				err = 'unknown ajax error' + String(xmlhttp.status)
 			}
 
-			err += 'url = ' + JSON.stringify(url)
+			err += 'url = ' + JSON.stringify(config.url)
 
-			console.log('error, bad code recievied', xmlhttp.status, err, url)
+			console.log('error, bad code recievied', xmlhttp.status, err, config.url)
 
 			return callback(err);
 		}
 
 		var response = JSON.parse(xmlhttp.response)
 
-		if (response.error) {
-			console.log("ERROR networking error bad reqeust?", url);
-		}
-
 		callback(null, response)
 	}.bind(this);
 
-	xmlhttp.open('GET', url, true);
-	xmlhttp.send();
+	xmlhttp.open(config.method, config.url, true);
+	xmlhttp.setRequestHeader("Content-type", "application/json");
+	xmlhttp.send(config.body);
 }
+
+
+function onError() {
+	var args = [];
+	for (var i = 0; i < arguments.length; i++) {
+		args[i] = arguments[i];
+	}
+
+	console.log.apply(console, ['ELOG'].concat(args));
+	console.trace();
+
+	var outputString = []
+
+	args.forEach(function (arg) {
+
+		var str;
+		try {
+			str = JSON.stringify(arg)
+		}
+		catch (e) {
+			str = 'circular data'
+		}
+		outputString.push(str)
+	}.bind(this))
+
+	//use a separate calls stack in case this throws an error, it will not affect code that calls this
+	setTimeout(function () {
+		fireRequest({
+			url: 'https://coursepro.io/log',
+			body: JSON.stringify({
+				value: outputString.join(''),
+				type: 'employee_error'
+			})
+		}, function (err, response) {
+			if (err) {
+				console.log("error logging error... lol");
+			};
+		}.bind(this))
+	}.bind(this), 0)
+}
+
+
+
+window.addEventListener('error', function (evt) {
+	var primaryMessage;
+	var secondaryMessage;
+	if (evt.error) {
+		primaryMessage = evt.error.stack
+		secondaryMessage = evt.error.name
+	}
+	else {
+		primaryMessage = evt.message
+	}
+
+	onError('uncaught_error:', primaryMessage, secondaryMessage, evt.filename)
+});
+
+
 
 var resultsContainer;
 var searchElement;
@@ -51,7 +123,7 @@ async.parallel([
 	function (callback) {
 		fireRequest('map.json', function (err, map) {
 			if (err) {
-				alert(err)
+				onError(err)
 				return callback(err);
 			}
 			peopleMap = map;
@@ -61,7 +133,7 @@ async.parallel([
 	function (callback) {
 		fireRequest('searchIndex.json', function (err, index) {
 			if (err) {
-				alert(err)
+				onError(err)
 				return callback(err);
 			}
 
@@ -101,17 +173,30 @@ async.parallel([
 	}.bind(this)
 ], function (err) {
 	if (err) {
+		onError(err)
 		return;
 	}
-
-
 
 
 }.bind(this))
 
 
+var resultsCount = 0;
 
 
+function logSearch() {
+	fireRequest({
+		url: 'https://coursepro.io/log',
+		body: JSON.stringify({
+			type: 'employee_search',
+			value: searchElement.value,
+			count: resultsCount
+		})
+	})
+}
+
+
+var searchTimeout;
 
 
 
@@ -121,11 +206,22 @@ function onSeach() {
 		return;
 	}
 
+
+	if (searchTimeout) {
+		clearTimeout(searchTimeout);
+		searchTimeout = null;
+	}
+
+	searchTimeout = setTimeout(logSearch, 2000);
+
+
+
 	while (resultsContainer.lastChild) {
 		resultsContainer.removeChild(resultsContainer.lastChild)
 	}
 
 	var results = searchIndex.search(searchElement.value, searchConfig).slice(0, 100)
+	resultsCount = results.length
 
 	if (results.length === 0) {
 		tableElement.style.display = 'none';
