@@ -202,6 +202,7 @@ var searchTimeout;
 
 function onSeach() {
 	if (searchElement.value.length === 0) {
+		resultsCount = 0;
 		tableElement.style.display = 'none';
 		return;
 	}
