@@ -5,9 +5,10 @@ var _ = require('lodash')
 var elasticlunr = require('elasticlunr')
 var fs = require('fs');
 var queue = require('d3-queue').queue
+var async = require('async')
+var cookie = require('cookie')
 
 var alphabet = 'qwertyuiopasdfghjklzxcvbnm';
-
 
 
 function handleRequestResponce(body, callback) {
@@ -89,7 +90,7 @@ var people = []
 var peopleMap = {}
 
 var index = elasticlunr();
-// index.saveDocument(false)
+index.saveDocument(false)
 
 index.setRef('id');
 index.addField('name');
@@ -99,136 +100,167 @@ index.addField('primaryappointment');
 index.addField('primarydepartment');
 
 
-function get(lastNameStart, callback) {
-
-	var body = 'searchBy=Last+Name&queryType=begins+with&searchText=' + lastNameStart + '&deptText=&addrText=&numText=&divText=&facStaff=1'
+var getCookie = async.memoize(function _getCookie(callback) {
 
 	request({
-		url: 'https://prod-web.neu.edu/wasapp/employeelookup/public/searchEmployees.action',
-		method: 'POST',
+		url: 'https://prod-web.neu.edu/wasapp/employeelookup/public/main.action',
 		headers: {
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143',
-			'Content-Type': 'application/x-www-form-urlencoded',
-			'Cookie': 'JSESSIONID=0000drbA9fD-qgH4GW78LJZGYkj:188q12kdr',
-			'Referer': 'https://prod-web.neu.edu/wasapp/employeelookup/public/searchEmployees.action'
-		},
-		body: body
+		}
 	}, function (err, resp, body) {
+		if (err) {
+			return callback(err)
+		}
 
-		handleRequestResponce(body, function (err, dom) {
-			var elements = domutils.getElementsByTagName('table', dom)
+		var cookieString = resp.headers['set-cookie'][0];
+		var cookies = cookie.parse(cookieString);
+		callback(null, cookies.JSESSIONID)
+	}.bind(this))
+})
 
-			for (var i = 0; i < elements.length; i++) {
-				var element = elements[i];
 
-				var goal = {
-					width: '100%'
+function get(lastNameStart, callback) {
+
+	getCookie(function (err, cookie) {
+		if (err) {
+			return callback(err)
+		}
+
+		var body = 'searchBy=Last+Name&queryType=begins+with&searchText=' + lastNameStart + '&deptText=&addrText=&numText=&divText=&facStaff=1'
+
+		request({
+			url: 'https://prod-web.neu.edu/wasapp/employeelookup/public/searchEmployees.action',
+			method: 'POST',
+			headers: {
+				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143',
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Cookie': 'JSESSIONID=' + cookie,
+				'Referer': 'https://prod-web.neu.edu/wasapp/employeelookup/public/searchEmployees.action'
+			},
+			body: body
+		}, function (err, resp, body) {
+
+			handleRequestResponce(body, function (err, dom) {
+				var elements = domutils.getElementsByTagName('table', dom)
+
+				for (var i = 0; i < elements.length; i++) {
+					var element = elements[i];
+
+					var goal = {
+						width: '100%'
+					}
+
+					if (_.isEqual(element.attribs, goal)) {
+
+						// Delete one of the elements that is before the header that would mess stuff up
+						domutils.removeElement(element.children[1].children[1])
+
+						var parsedTable = parseTable(element)
+						if (!parsedTable) {
+							console.log('Warning Unable to parse table:', lastNameStart)
+							return callback()
+						}
+						console.log('Found', parsedTable._rowCount, ' people on page ', lastNameStart)
+
+						for (var i = 0; i < parsedTable._rowCount; i++) {
+							var person = {};
+							person.name = parsedTable.name[i].split('\n\n')[0]
+
+							var idMatch = parsedTable.name[i].match(/.hrefparameter\s+=\s+"id=(\d+)";/i)
+							if (!idMatch) {
+								console.warn("Warn: unable to parse id, using random number", person.name);
+								person.id = String(Math.random());
+							}
+							else {
+								person.id = idMatch[1]
+							}
+
+							var phone = parsedTable.phone[i];
+							phone = phone.replace(/\D/g, '')
+
+
+							// Maybe add support for guesing area code if it is ommitted and most of the other ones have the same area code
+							if (phone.length === 10) {
+								person.phone = phone;
+							}
+
+							person.email = parsedTable.email[i];
+							person.primaryappointment = parsedTable.primaryappointment[i];
+							person.primarydepartment = parsedTable.primarydepartment[i];
+							people.push(person)
+							index.addDoc(person)
+							peopleMap[person.id] = person
+						}
+						return callback();
+					}
 				}
 
-				if (_.isEqual(element.attribs, goal)) {
+				console.log('YOOOOO it didnt find the table')
+				console.log(body)
 
-					// Delete one of the elements that is before the header that would mess stuff up
-					domutils.removeElement(element.children[1].children[1])
+				return callback('nope');
 
-					var parsedTable = parseTable(element)
-					if (!parsedTable) {
-						console.log('Warning Unable to parse table:', lastNameStart)
-						return callback()
-					}
-					console.log('Found', parsedTable._rowCount, ' people on page ', lastNameStart)
-
-					for (var i = 0; i < parsedTable._rowCount; i++) {
-						var person = {};
-						person.name = parsedTable.name[i].split('\n\n')[0]
-
-						var idMatch = parsedTable.name[i].match(/.hrefparameter\s+=\s+"id=(\d+)";/i)
-						if (!idMatch) {
-							console.warn("Warn: unable to parse id, using random number", person.name);
-							person.id = Math.random();
-						}
-						else {
-							person.id = idMatch[1]
-						}
-
-						var phone = parsedTable.phone[i];
-						phone = phone.replace(/\D/g, '')
-
-
-						// Maybe add support for guesing area code if it is ommitted and most of the other ones have the same area code
-						if (phone.length === 10) {
-							person.phone = phone;
-						}
-
-						person.email = parsedTable.email[i];
-						person.primaryappointment = parsedTable.primaryappointment[i];
-						person.primarydepartment = parsedTable.primarydepartment[i];
-						people.push(person)
-						index.addDoc(person)
-						peopleMap[person.id] = person
-					}
-					return callback();
-				}
-			}
-
-			console.log('YOOOOO it didnt find the table')
-			console.log(body)
-
-			return callback('nope');
-
+			}.bind(this))
 		}.bind(this))
 	}.bind(this))
 }
 
-var q = queue(5)
+function main() {
+
+	var q = queue(5)
 
 
-alphabet.split('').forEach(function (firstLetter) {
-	alphabet.split('').forEach(function (secondLetter) {
+	alphabet.split('').forEach(function (firstLetter) {
+		alphabet.split('').forEach(function (secondLetter) {
 
-		q.defer(function (callback) {
+			q.defer(function (callback) {
 
-			get(firstLetter + secondLetter, function (err) {
-				callback()
+				get(firstLetter + secondLetter, function (err) {
+					callback()
+				}.bind(this))
 			}.bind(this))
+
 		}.bind(this))
+	}.bind(this))
+
+
+	q.awaitAll(function (err) {
+		if (err) {
+			console.log(err);
+			return;
+		}
+
+		fs.writeFile("data.json", JSON.stringify(people), function (err) {
+			if (err) {
+				return console.log(err);
+			}
+
+			console.log("The file was saved!");
+		});
+
+
+		fs.writeFile("searchIndex.json", JSON.stringify(index.toJSON()), function (err) {
+			if (err) {
+				return console.log(err);
+			}
+
+			console.log("The search index was saved!");
+		});
+
+
+		fs.writeFile("map.json", JSON.stringify(peopleMap), function (err) {
+			if (err) {
+				return console.log(err);
+			}
+
+			console.log("The people map was saved!");
+		});
 
 	}.bind(this))
-}.bind(this))
+}
 
+main()
 
-q.awaitAll(function (err) {
-	if (err) {
-		console.log(err);
-		return;
-	}
-
-	fs.writeFile("data.json", JSON.stringify(people), function (err) {
-		if (err) {
-			return console.log(err);
-		}
-
-		console.log("The file was saved!");
-	});
-
-
-	fs.writeFile("searchIndex.json", JSON.stringify(index.toJSON()), function (err) {
-		if (err) {
-			return console.log(err);
-		}
-
-		console.log("The search index was saved!");
-	});
-
-
-	fs.writeFile("map.json", JSON.stringify(peopleMap), function (err) {
-		if (err) {
-			return console.log(err);
-		}
-
-		console.log("The people map was saved!");
-	});
-
-
-
-}.bind(this))
-
+// getCookie(function (err, cookie) {
+// 	console.log(err, cookie);
+// }.bind(this))
