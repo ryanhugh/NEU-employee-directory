@@ -12,7 +12,9 @@ after_success:
   - echo $GIT_PRIVATE_KEY | base64 --decode > .travis/deploy_key.pem
   - chmod 600 .travis/deploy_key.pem
   - ssh-add .travis/deploy_key.pem
-  - ll .travis
+  - echo hi > hi
+  - git commit -a -m "test commit!"
+  - ls -lah .travis
   - git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
   - git push deploy
 
