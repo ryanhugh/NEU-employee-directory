@@ -9,13 +9,14 @@ script:
 # Put the scraping here
 
 after_success:
+  - eval "$(ssh-agent -s)"
   - echo $GIT_PRIVATE_KEY | base64 --decode > ~/deploy_key.pem
   - chmod 600 ~/deploy_key.pem
   - ssh-add ~/deploy_key.pem
   - echo hi > hi
-  - git commit -a -m "test commit!"
   - git config --global user.email "ryanhughes624+gitbot@gmail.com"
   - git config --global user.name "data-updater-bot"
+  - git commit -a -m "test commit!"
   - ls -lah ~
   - git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
   - git push deploy
