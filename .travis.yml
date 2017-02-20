@@ -13,7 +13,9 @@ after_success:
   - echo $GIT_PRIVATE_KEY | base64 --decode > ~/deploy_key
   - chmod 600 ~/deploy_key
   - ssh-add ~/deploy_key
-  - git checkout master
+  - git pull
+  - git checkout gh-pages
+  - git merge master
   - echo hi > hi
   - git config --global user.email "ryanhughes624+gitbot@gmail.com"
   - git config --global user.name "data-updater-bot"
@@ -26,6 +28,7 @@ after_success:
   - git push deploy
 
 cache: yarn
+
 
 notifications:
   email:
