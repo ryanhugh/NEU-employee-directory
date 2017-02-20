@@ -12,7 +12,9 @@ after_success:
   - chmod 600 ~/deploy_key
   - ssh-add ~/deploy_key
   - git pull
+  - git fetch
   - git checkout gh-pages
+  #- git checkout origin/gh-pages
   - git merge master
   - echo hi > hi
   - git config --global user.email "ryanhughes624+gitbot@gmail.com"
@@ -26,8 +28,13 @@ after_success:
   - git push deploy
 
 cache: yarn
+<<<<<<< HEAD
 #
 
+=======
+
+#
+>>>>>>> gh-pages
 notifications:
   email:
     on_success: never
