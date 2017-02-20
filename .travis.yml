@@ -9,30 +9,10 @@ script:
 
 # Run this command to get the value to put in travis env settings:
 # cat id_rsa | base64 -w 0
+# Note: this value will not be present in 
 
 after_success:
-  - eval "$(ssh-agent -s)"
-  - echo $GIT_PRIVATE_KEY | base64 --decode > ~/deploy_key
-  - chmod 600 ~/deploy_key
-  - ssh-add ~/deploy_key
-  - git pull
-  - git fetch
-  - git branch
-  - git checkout -b gh-pages
-  - echo $TRAVIS_EVENT_TYPE
-  #- git checkout origin/gh-pages
-  - git merge master
-  - echo hi > hi
-  - git config --global user.email "ryanhughes624+gitbot@gmail.com"
-  - git config --global user.name "data-updater-bot"
-  - git add hi
-  - git status
-  - git commit -a -m "test commit!"
-  - ls -lah ~
-  - cat ~/deploy_key | wc -l
-  - git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
-  - git config --global push.default simple
-  - git push git@github.com:ryanhugh/NEU-employee-directory.git gh-pages
+  - bash travis_scrape.sh
 
 cache: yarn
 
