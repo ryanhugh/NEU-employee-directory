@@ -5,6 +5,13 @@ before_script:
   - npm install -g gulp
 script:
   - echo No tests
+  - echo test > test
+# Put the scraping here
+
+deploy:
+  - echo $GIT_PRIVATE_KEY | base64 --decode > ~/.git_deploy_key
+  - ll ~ 
+  - git push -i ~/.git_deploy_key
 
 cache: yarn
 
