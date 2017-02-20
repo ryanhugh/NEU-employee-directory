@@ -8,10 +8,13 @@ script:
   - echo test > test
 # Put the scraping here
 
-deploy:
-  - echo $GIT_PRIVATE_KEY | base64 --decode > ~/.git_deploy_key
-  - ll ~ 
-  - git push -i ~/.git_deploy_key
+after_success:
+  - echo $GIT_PRIVATE_KEY | base64 --decode > .travis/deploy_key.pem
+  - chmod 600 .travis/deploy_key.pem
+  - ssh-add .travis/deploy_key.pem
+  - ll .travis
+  - git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
+  - git push deploy
 
 cache: yarn
 
