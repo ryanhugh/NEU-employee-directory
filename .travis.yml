@@ -28,13 +28,7 @@ after_success:
   - git push deploy
 
 cache: yarn
-<<<<<<< HEAD
-#
 
-=======
-
-#
->>>>>>> gh-pages
 notifications:
   email:
     on_success: never
