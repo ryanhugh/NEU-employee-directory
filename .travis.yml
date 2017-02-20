@@ -12,7 +12,7 @@ after_success:
   - eval "$(ssh-agent -s)"
   - echo $GIT_PRIVATE_KEY | base64 --decode > ~/deploy_key
   - chmod 600 ~/deploy_key
-  #- ssh-add ~/deploy_key
+  - ssh-add ~/deploy_key
   - echo hi > hi
   - git config --global user.email "ryanhughes624+gitbot@gmail.com"
   - git config --global user.name "data-updater-bot"
@@ -20,7 +20,7 @@ after_success:
   - ls -lah ~
   - cat ~/deploy_key | wc -l
   - git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
-  - git push deploy -i ~/deploy_key
+  - git push deploy
 
 cache: yarn
 
