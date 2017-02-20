@@ -7,6 +7,8 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     exit 0
 fi
 
+rm test
+
 eval "$(ssh-agent -s)"
 echo $GIT_PRIVATE_KEY | base64 --decode > ~/deploy_key
 chmod 600 ~/deploy_key
