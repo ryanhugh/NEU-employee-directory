@@ -1,5 +1,5 @@
 # Pull requests and commits to other branches shouldn't try to deploy
-if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" ]; then
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     echo hi
     echo $TRAVIS_PULL_REQUEST
     echo $TRAVIS_BRANCH
