@@ -14,7 +14,7 @@ after_success:
   - git pull
   - git fetch
   - git branch
-  - git checkout gh-pages
+  - git checkout -b gh-pages
   #- git checkout origin/gh-pages
   - git merge master
   - echo hi > hi
@@ -26,7 +26,7 @@ after_success:
   - cat ~/deploy_key | wc -l
   - git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
   - git config --global push.default simple
-  - git push deploy
+  - git push origin gh-pages
 
 cache: yarn
 
