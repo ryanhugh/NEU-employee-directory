@@ -21,4 +21,5 @@ git config --global user.name "data-updater-bot"
 git commit -a -m "Updated data"
 git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
 git config --global push.default simple
-git push git@github.com:ryanhugh/NEU-employee-directory.git gh-pages
+git push git@github.com:ryanhugh/NEU-employee-directory.git gh-pages --force
+echo hi
