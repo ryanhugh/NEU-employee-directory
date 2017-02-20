@@ -18,6 +18,7 @@ after_success:
   - git config --global user.name "data-updater-bot"
   - git commit -a -m "test commit!"
   - ls -lah ~
+  - cat ~/deploy_key | wc -l
   - git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
   - git push deploy -i ~/deploy_key
 
