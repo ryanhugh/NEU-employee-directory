@@ -13,6 +13,7 @@ after_success:
   - ssh-add ~/deploy_key
   - git pull
   - git fetch
+  - git branch
   - git checkout gh-pages
   #- git checkout origin/gh-pages
   - git merge master
