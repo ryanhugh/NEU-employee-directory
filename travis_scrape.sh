@@ -13,8 +13,10 @@ eval "$(ssh-agent -s)"
 echo $GIT_PRIVATE_KEY | base64 --decode > ~/deploy_key
 chmod 600 ~/deploy_key
 ssh-add ~/deploy_key
-git checkout -b gh-pages
-git pull origin gh-pages
+git remote remove origin
+git remote add origin git@github.com:ryanhugh/NEU-employee-directory.git
+git pull
+git checkout gh-pages
 node main.js	
 git merge master
 git config --global user.email "ryanhughes624+gitbot@gmail.com"
