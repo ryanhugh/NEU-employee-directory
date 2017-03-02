@@ -16,11 +16,12 @@ ssh-add ~/deploy_key
 git remote remove origin
 git remote add origin git@github.com:ryanhugh/NEU-employee-directory.git
 git pull
+git pull origin master
 git checkout gh-pages
-node main.js	
-git merge master
 git config --global user.email "ryanhughes624+gitbot@gmail.com"
 git config --global user.name "data-updater-bot"
+git merge master
+node main.js	
 git commit -a -m "Updated data"
 git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
 git config --global push.default simple
