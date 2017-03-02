@@ -15,12 +15,13 @@ chmod 600 ~/deploy_key
 ssh-add ~/deploy_key
 git remote remove origin
 git remote add origin git@github.com:ryanhugh/NEU-employee-directory.git
-git pull
 git pull origin master
+git pull origin gh-pages
 git checkout gh-pages
 git config --global user.email "ryanhughes624+gitbot@gmail.com"
 git config --global user.name "data-updater-bot"
 git merge master
+git commit -a -m "Merged the latest changes into gh-pages"
 node main.js	
 git commit -a -m "Updated data"
 git remote add deploy git@github.com:ryanhugh/NEU-employee-directory.git
