@@ -9,7 +9,7 @@ script:
 
 # Run this command to get the value to put in travis env settings:
 # cat id_rsa | base64 -w 0
-# Note: this value will not be present in 
+# Note: this ENV variable will not be available in pull requests that come from different repos, so there is no security concern 
 
 after_success:
   - bash travis_scrape.sh
