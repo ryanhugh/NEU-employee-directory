@@ -56,78 +56,36 @@
     <div id="top-header" class="ui center aligned icon header">
         <h1 style="font-size: 50px;">Employee Directory</h1>
         <h3 style="color: grey;font-size: 29px;padding-bottom: 30px">For Northeastern</h3>
-        <div id="search-wrapper" class="sub header">
-            <label for="jets-search">
-                <i class="search icon"></i>
-            </label>
-            <input type="search" id="seach_id" placeholder="Search Professors and Employees" autocomplete="off" spellcheck="false" tabindex="0">
-        </div>
     </div>
 
-    <div class="ui stackable grid container">
-        <div class="five column row">
-
-            <table class="ui celled table content-wrapper" id="main_results_table_id" style="display:none">
-                <thead>
-                    <tr>
-                        <th class="single line four wide">
-                            <h3>Professor/Employee</h3>
-                        </th>
-                        <th class="two wide">Phone</th>
-                        <th class="two wide">Email</th>
-                        <th class="two wide">Primary Appointment</th>
-                        <th class="two wide">Primary Department</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="template_class_name" style="display:none">
-                        <td class="main name"></td>
-                        <td class="icon phone"></td>
-                        <td class="icon email"></td>
-                        <td class="icon primaryappointment"></td>
-                        <td class="icon primarydepartment"></td>
-                    </tr>
-
-                </tbody>
-            </table>
-
-
-            <div style="height:10px"></div>
-
-        </div>
-
-
-
+    <div style="text-align:center">
+        <h1 style="font-size: 40px;">This project is depreciated in favor of <a href="https://searchneu.com"> https://searchneu.com</a></h1>
+        <h1 style="font-size: 40px;">Go check out that site! :D :D</h1>
+        <h1 style="font-size: 40px;">Redirecting in <span id="timeoutId">7</span>...</h1>
     </div>
 
+    <script type="text/javascript">
+        
+
+    var timeRemaining = 7;
+
+    setTimeout(function () {
+        window.location = 'https://searchneu.com'
+    }, timeRemaining * 1000)
 
 
-    <div class="ui divider"></div>
+    var element = document.getElementById('timeoutId')
+    element.innerText = timeRemaining;
 
-    <div class="footer ui basic center aligned segment">
-        See an issue or want to add to this website? Fork it or create an issue on
-        <a href="https://github.com/ryanhugh/NEU-employee-directory">GitHub</a>.
-    </div>
+    setInterval(function() {
+        timeRemaining --;
+        if (timeRemaining >= 0) {
+            element.innerText = timeRemaining;
+        }
+    }, 1000)
 
-    <div class="ui divider"></div>
 
-    <div class="footer ui basic center aligned segment">
-        Made with
-        <i class="rocket circular small icon"></i>
-        by
-        <a href="http://github.com/ryanhugh">Ryan Hughes</a>
-        and UI borrowed from
-        <a href="https://github.com/2factorauth/twofactorauth">Two Factor Authenticaton</a>.
-    </div>
-
-    <!-- 3rd Party Libraries -->
-    <script data-rocketsrc="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js" type="text/rocketscript" data-rocketoptimized="true"></script>
-    <script data-rocketsrc="js/semantic.min.js" type="text/rocketscript" data-rocketoptimized="true"></script><script type="text/javascript" src="https://twofactorauth.org/lib/semantic/javascript/semantic.min.js"></script>
-    <script data-rocketsrc="js/jquery.unveil.min.js" type="text/rocketscript" data-rocketoptimized="true"></script>
-
-    <!-- CUSTOM JS -->
-    <script data-rocketsrc="/js/app.js" type="text/rocketscript"></script>
-    <script type="text/javascript" src="js/app.js"></script>
+    </script>
 
 </body>
 
